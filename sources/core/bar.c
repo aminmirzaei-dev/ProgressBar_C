@@ -2,17 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../include/cpb/bar.h"
+#include "../../include/cpb/color.h"
 #include "../../include/cpb/renderer.h"
 
-/* Progress bar internal structure */
 struct cpb_bar {
     int value;
     int max;
     int width;
     char label[64];
+
+    cpb_color_t fill_color;
+    cpb_color_t empty_color;
+    cpb_color_t label_color;
 };
 
-/* Create a new progress bar */
 cpb_bar_t* cpb_bar_create(int max) {
     cpb_bar_t* bar = malloc(sizeof(cpb_bar_t));
     if (!bar) return NULL;
@@ -22,42 +25,45 @@ cpb_bar_t* cpb_bar_create(int max) {
     bar->width = 30;
     strcpy(bar->label, "Progress");
 
+    bar->fill_color  = CPB_COLOR_GREEN;
+    bar->empty_color = CPB_COLOR_WHITE;
+    bar->label_color = CPB_COLOR_CYAN;
+
     cpb_renderer_register_bar(bar);
     return bar;
 }
 
-void cpb_bar_set_label(cpb_bar_t* bar, const char* label) {
-    strncpy(bar->label, label, sizeof(bar->label) - 1);
+void cpb_bar_set_fill_color(cpb_bar_t* bar, cpb_color_t color) {
+    bar->fill_color = color;
 }
 
-void cpb_bar_set_width(cpb_bar_t* bar, int width) {
-    bar->width = width;
+void cpb_bar_set_empty_color(cpb_bar_t* bar, cpb_color_t color) {
+    bar->empty_color = color;
 }
 
-void cpb_bar_set(cpb_bar_t* bar, int value) {
-    if (value > bar->max) value = bar->max;
-    bar->value = value;
-}
-
-void cpb_bar_increment(cpb_bar_t* bar, int delta) {
-    cpb_bar_set(bar, bar->value + delta);
-}
-
-int cpb_bar_is_finished(cpb_bar_t* bar) {
-    return bar->value >= bar->max;
+void cpb_bar_set_label_color(cpb_bar_t* bar, cpb_color_t color) {
+    bar->label_color = color;
 }
 
 void cpb_bar_render(const cpb_bar_t* bar) {
     int filled = (bar->value * bar->width) / bar->max;
 
-    printf("%s [", bar->label);
+    cpb_color_set(bar->label_color);
+    printf("%s ", bar->label);
+    cpb_color_reset();
+
+    printf("[");
+
     for (int i = 0; i < bar->width; i++) {
-        printf(i < filled ? "#" : " ");
+        if (i < filled) {
+            cpb_color_set(bar->fill_color);
+            printf("#");
+        } else {
+            cpb_color_set(bar->empty_color);
+            printf(" ");
+        }
     }
+
+    cpb_color_reset();
     printf("] %3d%%\n", (bar->value * 100) / bar->max);
 }
-
-void cpb_bar_destroy(cpb_bar_t* bar) {
-    free(bar);
-}
-
