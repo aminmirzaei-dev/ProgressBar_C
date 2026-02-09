@@ -5,7 +5,13 @@
 extern "C" {
 #endif
 
+#include "color.h"
+
 typedef struct cpb_bar cpb_bar_t;
+
+void cpb_bar_set_fill_color(cpb_bar_t* bar, cpb_color_t color);
+void cpb_bar_set_empty_color(cpb_bar_t* bar, cpb_color_t color);
+void cpb_bar_set_label_color(cpb_bar_t* bar, cpb_color_t color);
 
 /* Create a progress bar with a maximum value */
 cpb_bar_t* cpb_bar_create(int max);
